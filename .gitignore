@@ -7,3 +7,17 @@
 *~
 *.bak
 *.tmp
+
+
+## doxygen ##
+
+doc/doxygen/doxygen.log
+doc/doxygen/doxytags.xml
+doc/doxygen/html/
+doc/doxygen/latex/
+doc/doxygen/rtf/
+doc/doxygen/def/
+doc/doxygen/docbook/
+doc/doxygen/perlmod/
+doc/doxygen/sqlite3/
+doc/doxygen/xml/
