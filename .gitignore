@@ -21,3 +21,9 @@ doc/doxygen/docbook/
 doc/doxygen/perlmod/
 doc/doxygen/sqlite3/
 doc/doxygen/xml/
+
+
+## cmake ##
+
+build/
+build-*/
