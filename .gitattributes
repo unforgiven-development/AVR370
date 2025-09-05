@@ -4,10 +4,31 @@
 
 ## GENERIC ##
 
-*			text=auto
+*				text=auto
 
 
 ## SOURCE CODE ##
 
-*.c			eol=lf diff=cpp
-*.h			eol=lf diff=cpp
+*.c				eol=lf diff=cpp
+*.h				eol=lf diff=cpp
+*.S				eol=lf
+*.asm			eol=lf
+
+
+## scripts ##
+
+CMakeLists.txt	eol=crlf
+*.sh			eol=lf
+*.fish			eol=lf
+*.bat			eol=crlf
+*.cmd			eol=crlf
+*.ps1			eol=crlf
+Makefile		eol=lf
+Doxyfile		eol=lf
+*.py			eol=lf diff=python
+
+
+## text & markup ##
+
+*.md			eol=crlf
+*.txt			eol=crlf
