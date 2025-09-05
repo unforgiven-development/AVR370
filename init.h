@@ -36,8 +36,12 @@
  * DAMAGE.
  */
 
+#ifndef INIT_H_
+#define INIT_H_
+
 #include "avr_compiler.h"
 #include "touch_api.h"
+
 
 // Public function declarations
 void io_init_terminal_mode(void);
@@ -51,3 +55,5 @@ void timer1_init(void);
 void touch_init(void);
 void qt_set_parameters(void);
 
+
+#endif	/* !INIT_H_ */

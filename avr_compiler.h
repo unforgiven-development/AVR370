@@ -42,30 +42,39 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef COMPILER_AVR_H
-#define COMPILER_AVR_H
+#ifndef AVR_COMPILER_H_
+#define AVR_COMPILER_H_
+
 
 #ifndef F_CPU
 /*! \brief Define default CPU frequency, if this is not already defined. */
 #define F_CPU 11059200UL
 #endif
 
-#include <stdint.h>
+
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+
 
 /*! \brief This macro will protect the following code from interrupts. */
-#define AVR_ENTER_CRITICAL_REGION( ) uint8_t volatile saved_sreg = SREG; \
-                                     cli();
+#define AVR_ENTER_CRITICAL_REGION()																					\
+		do {																										\
+			uint8_t volatile saved_sreg = SREG;																		\
+			cli();																									\
+		} while (0)
 
-/*! \brief This macro must always be used in conjunction with AVR_ENTER_CRITICAL_REGION
- *        so the interrupts are enabled again.
+/**
+ * \brief This macro must always be used in conjunction with AVR_ENTER_CRITICAL_REGION so the interrupts are enabled
+ *        again.
  */
-#define AVR_LEAVE_CRITICAL_REGION( ) SREG = saved_sreg;
+#define AVR_LEAVE_CRITICAL_REGION()																					\
+		SREG = saved_sreg;
 
-#if defined( __ICCAVR__ )
+#if defined(__ICCAVR__)
 
 #include <inavr.h>
 #include <ioavr.h>
@@ -158,6 +167,7 @@
 #else
 #error Compiler not supported.
 #endif
+
 
 #endif
 

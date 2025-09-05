@@ -1,9 +1,8 @@
 /**
- * \file
- *
+ * \file usart.h
  * \brief USART driver header file
  *
- * Copyright (C) 2011 Atmel Corporation. All rights reserved.
+ * \copyright Copyright (C) 2011 Atmel Corporation. All rights reserved.
  *
  * \page License
  *
@@ -36,16 +35,21 @@
  * DAMAGE.
  */
 
+#ifndef USART_H_
+#define USART_H_
+
 #include "avr_compiler.h"
 
- /* Renaming usart1_putchar for IAR. IAR needs to use putchar in
-  * order to point printf to correct usart
-  */
-#if defined( __ICCAVR__ )
+
+/* Renaming usart1_putchar for IAR. IAR needs to use putchar in order to point printf to correct usart. */
+#if defined(__ICCAVR__)
 #define usart1_putchar putchar
 #endif
 
 // Public function declarations
 uint8_t usart1_getchar(void);
 int usart1_putchar(int c);
+
+
+#endif	/* !USART_H_ */
 

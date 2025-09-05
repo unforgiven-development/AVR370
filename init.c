@@ -38,34 +38,35 @@
 
 #include "init.h"
 
+
 /**
  * \defgroup init_driver_group Initialization driver
  *
- * The init driver is used to initialize IO (demo or terminal mode),
- * power reduction features, USART1, ADC, Timer1 (demo or terminal mode)
- * and touch sensing (QTB0)
+ * The \b init driver is used to initialize I/O (demo or terminal mode), power reduction features, USART1, ADC,
+ * Timer1 (demo or terminal mode) and touch sensing (QTB0).
  *
  * @{
  */
 
+
 extern TOUCH_DATA_T SNS_array[2][2];
 extern TOUCH_DATA_T SNSK_array[2][2];
+
+
 
 /**
  * \brief Function to setup IO for terminal mode.
  *
- * Configure all I/O as input pull-up enabled to make sure all I/Os have
- * a defined level except LEDs (PB3:0) which is configured as outputs.
+ * Configure all I/O as input pull-up enabled to make sure all I/Os have a defined level except LEDs (PB3:0) which is
+ * configured as outputs. \n
  * Light sensor and NTC sensor (PA6 and PA7): input pull-up disable.
  */
-void io_init_terminal_mode(void)
-{
+void io_init_terminal_mode(void) {
 	DDRA = 0x00;
 	DDRB = (1 << DDB3) | (1 << DDB2) | (1 << DDB1) | (1 << DDB0);
 	DDRC = 0x00;
 	DDRD = 0x00;
-	PORTA = (1 << PORTA5) | (1 << PORTA4) | (1 << PORTA3) | (1 << PORTA2) 
-		| (1 << PORTA1) | (1 << PORTA0);
+	PORTA = (1 << PORTA5) | (1 << PORTA4) | (1 << PORTA3) | (1 << PORTA2) | (1 << PORTA1) | (1 << PORTA0);
 	PORTB = 0xFF;
 	PORTC = 0xFF;
 	PORTD = 0xFF;
@@ -79,14 +80,12 @@ void io_init_terminal_mode(void)
  * Light sensor and NTC sensor (PA6 and PA7): input pull-up disable.
  * Enable pinchange interrupt for SW0:2 used to toggle through operating modes
  */
-void io_init_demo_mode(void)
-{
+void io_init_demo_mode(void) {
 	DDRA = 0x00;
 	DDRB = 0x00;
 	DDRC = 0x00;
 	DDRD = 0x00;
-	PORTA = (1 << PORTA5) | (1 << PORTA4) | (1 << PORTA3)
-		| (1 << PORTA2) | (1 << PORTA1) | (1 << PORTA0);
+	PORTA = (1 << PORTA5) | (1 << PORTA4) | (1 << PORTA3) | (1 << PORTA2) | (1 << PORTA1) | (1 << PORTA0);
 	PORTB = 0xFF;
 	PORTC = 0xFF;
 	PORTD = 0xFF;
@@ -103,8 +102,7 @@ void io_init_demo_mode(void)
  * Timer2 which is used in power-save mode.
  * The function will also shutdown analog modules like the AC and ADC.
  */
-void power_reduction_enable(void)
-{
+void power_reduction_enable(void) {
 	// Disable Analog Comparator
 	ACSR |= (1 << ACD);
 
@@ -118,8 +116,7 @@ void power_reduction_enable(void)
 	DIDR0 = 0xFF;
 
 	// Turn off clock to all I/Os except for timer2 (used in power-save mode)
-	PRR0 = (1 << PRTWI) | (0 << PRTIM2) | (1 << PRTIM0) | (1 << PRUSART1)
-		| (1 << PRTIM1) | (1 << PRSPI) | (1 << PRUSART0) | (1 << PRADC);
+	PRR0 = (1 << PRTWI) | (0 << PRTIM2) | (1 << PRTIM0) | (1 << PRUSART1) | (1 << PRTIM1) | (1 << PRSPI) | (1 << PRUSART0) | (1 << PRADC);
 }
 
 /** \brief Function to setup USART1.
@@ -132,8 +129,7 @@ void power_reduction_enable(void)
  * - 1 stop bit
  * - 8-bit character size
  */
-void usart1_init(void)
-{
+void usart1_init(void) {
 	// Make sure I/O clock to USART1 is enabled
 	PRR0 &= ~(1 << PRUSART1);
 
@@ -182,8 +178,7 @@ void adc_init(void)
  * - ICR1 set as TOP
  * - Output compare match B and timer1 overflow interrupts enabled
  */
-void timer1_lightdemo_init(void)
-{
+void timer1_lightdemo_init(void) {
 	// Make sure I/O clock to timer1 is enabled
 	PRR0 &= ~(1 << PRTIM1);
 
@@ -191,8 +186,7 @@ void timer1_lightdemo_init(void)
 	TCCR1A = (1 << COM1B1) | (0 << COM1B0) | (1 << WGM11) | (0 << WGM10);
 
 	// Start timer0, clkIO/8 prescaling
-	TCCR1B = (1 << WGM13) | (1 << WGM12) | (0 << CS12)
-		| (1 << CS11) | (0 << CS10);
+	TCCR1B = (1 << WGM13) | (1 << WGM12) | (0 << CS12) | (1 << CS11) | (0 << CS10);
 
 	// Adjust top value to match Light sensor output
 	ICR1 = 0x3FF;
@@ -202,12 +196,11 @@ void timer1_lightdemo_init(void)
 
 }
 
-/** \brief Function to stop timer1 used in the light sensor demo. 
+/** \brief Function to stop timer1 used in the light sensor demo.
  *
  * All timer1 registers are set to default state
  */
-void stop_timer1_lightdemo(void)
-{
+void stop_timer1_lightdemo(void) {
 	// Set TCCR1A to default value
 	TCCR1A = 0x00;
 
@@ -238,8 +231,7 @@ void stop_timer1_lightdemo(void)
  * - CTC mode (clear on compare match A)
  * - clkIO/8 prescaling
  */
-void timer1_init(void)
-{
+void timer1_init(void) {
 	// Make sure I/O clock to timer1 is enabled
 	PRR0 &= ~(1 << PRTIM1);
 
@@ -262,8 +254,7 @@ void timer1_init(void)
  * configuration data structure. The user can change the values
  * of these parameters to fit the application.
  */
-void qt_set_parameters( void )
-{
+void qt_set_parameters(void) {
 	//  Treshold values for touch sensing
 	qt_config_data.qt_di              = DEF_QT_DI;
 	qt_config_data.qt_neg_drift_rate  = DEF_QT_NEG_DRIFT_RATE;
@@ -280,8 +271,7 @@ void qt_set_parameters( void )
  * LED1 is used as touch indication. Touch detected: LED1 on, touch not
  * detected: LED1 off.
  */
-void touch_init(void)
-{
+void touch_init(void) {
 	// Configure touch button (QTB0) pin mapping
 	SNS_array[0][0] = 0x40;
 	SNS_array[0][1] = 0x00;
@@ -307,14 +297,17 @@ void touch_init(void)
 	/* Set the parameters like recalibration threshold,
 	 * Max_On_Duration etc in this function by the user
 	 */
-	qt_set_parameters( );
+	qt_set_parameters();
 
-	/* This function is called after the library has made 
-	 * capacitive measurements, but before it has processed them. 
-	 * The user can use this hook to apply filter functions to the 
+	/* This function is called after the library has made
+	 * capacitive measurements, but before it has processed them.
+	 * The user can use this hook to apply filter functions to the
 	 * measured signal values.(Possibly to fix sensor layout faults)
 	 */
 	qt_filter_callback = 0;
 }
 
- //! @}
+
+/**
+ * @}
+ */

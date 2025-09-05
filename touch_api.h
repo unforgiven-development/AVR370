@@ -1,118 +1,116 @@
 /*******************************************************************************
-*   Atmel Corporation:  http://www.atmel.com
-*   Support email:  touch@atmel.com
-******************************************************************************/
+ *   Atmel Corporation:  http://www.atmel.com
+ *   Support email:  touch@atmel.com
+ ******************************************************************************/
 /*  License
-*   Copyright (c) 2010, Atmel Corporation All rights reserved.
-*
-*   Redistribution and use in source and binary forms, with or without
-*   modification, are permitted provided that the following conditions are met:
-*
-*   1. Redistributions of source code must retain the above copyright notice,
-*   this list of conditions and the following disclaimer.
-*
-*   2. Redistributions in binary form must reproduce the above copyright notice,
-*   this list of conditions and the following disclaimer in the documentation
-*   and/or other materials provided with the distribution.
-*
-*   3. The name of ATMEL may not be used to endorse or promote products derived
-*   from this software without specific prior written permission.
-*
-*   THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
-*   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-*   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY AND
-*   SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT,
-*   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-*   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-*   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-*   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-*   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-*   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ *   Copyright (c) 2010, Atmel Corporation All rights reserved.
+ *
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ *   3. The name of ATMEL may not be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
+ *   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE EXPRESSLY AND
+ *   SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT,
+ *   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ *   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-
-#ifndef TOUCH_API_H
-#define TOUCH_API_H
+#ifndef TOUCH_API_H_
+#define TOUCH_API_H_
 
 /*----------------------------------------------------------------------------
                             nested include files
 ----------------------------------------------------------------------------*/
-#if defined (__GNUC__) || defined (__ICCARM__) ||defined (__CC_ARM)
-    #include <stdint.h>
+#if (defined(__GNUC__)|| defined(__ICCARM__) || defined(__CC_ARM))
+#include <stdint.h>
 #endif
 
-#if !defined (__CC_ARM)
-    #include <stdbool.h>
+#if !defined(__CC_ARM)
+#include <stdbool.h>
 #endif
+
 #include <stdlib.h>
-#ifndef MAKE_BUILD
-    #ifdef _QMATRIX_
-        #include "touch_qm_config.h"
-    #elif defined _QTOUCH_
-        #if !(defined(__AVR32__) || defined(__ICCAVR32__))
-            #include "touch_qt_config.h"
-        #endif
-    #else
-        #error /* please provide any one of the acquisition methods*/
-    #endif
-#endif
 
-#ifdef __ICCAVR__
-    #include <intrinsics.h>
-#endif /* (__ICCAVR__) */
+#if !defined(MAKE_BUILD)
+#if defined(_QMATRIX_)
+#include "touch_qm_config.h"
+#elif defined(_QTOUCH_)
+#if !(defined(__AVR32__) || defined(__ICCAVR32__))
+#include "touch_qt_config.h"
+#endif	/* !(defined(__AVR32__) || defined(__ICCAVR32__)) */
+#else	/* defined(_QMATRIX_) || defined(_QTOUCH_) */
+/* please provide any one of the QTouch acquisition methods */
+#error 'A QTouch acquisition method must be defined'
+#endif	/* !(defined(_QMATRIX_) || defined(_QTOUCH_)) */
+#endif	/* !defined(MAKE_BUILD) */
+
+#if defined(__ICCAVR__)
+#include <intrinsics.h>
+#endif	/* defined(__ICCAVR__) */
 
 
-/*----------------------------------------------------------------------------
-                        Note: choice of library version
-------------------------------------------------------------------------------
-QTouch libraries are supplied built with a range of charge times.
-Charge time is the duration in which charge is transferred from the AVR onto
-the measurement capacitor. Shorter charge times result in faster measurements,
-but may be too fast to completely transfer charge onto the measurement
-capacitor.
-
-The range of charge times lets the user choose a suitable version for the clock
-rate their chip is running at.
-
-To make capacitive measurements, a charge time on the order of 0.25us to 2.5us
-is typically required. The following table shows the charge times corresponding
-to a range of clock speeds.
-
-Clock speed (MHz) Cycle time (us) Suitable charge times
------------------ --------------- ---------------------
-      1              1            1~2 cycles (1us to 2us)
-      2              0.5          1~5 cycles (0.5us to 2.5us)
-      4              0.25         1~10 cycles (0.25us to 2.5us)
-      8              0.125        2~10 cycles (0.25us to 1.25us)
-      10             0.1          3~25 cycles (0.3us to 2.5us)
-      16             0.0625       4~25 cycles (0.25us to 1.5625s)
-      20             0.05         5~50 cycles (0.25us to 2.5us)
-
-----------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------------------------------------------ *
+ *     NOTE: choice of library version                                                                                *
+ * ------------------------------------------------------------------------------------------------------------------ *
+ * QTouch libraries are supplied built with a range of charge times. Charge time is the duration in which charge is
+ * transferred from the AVR onto the measurement capacitor. Shorter charge times result in faster measurements, but
+ * may be too fast to completely transfer charge onto the measurement capacitor.
+ *
+ * The range of charge times lets the user choose a suitable version for the clock rate their chip is running at.
+ *
+ * To make capacitive measurements, a charge time on the order of 0.25us to 2.5us is typically required.
+ * The following table shows the charge times corresponding to a range of clock speeds.
+ *
+ * | Clock speed (MHz) | Cycle time (us) | Suitable charge times            |
+ * |-------------------|-----------------|----------------------------------|
+ * |                 1 |               1 |  1~2 cycles (1us to 2us)         |
+ * |                 2 |             0.5 |  1~5 cycles (0.5us to 2.5us)     |
+ * |                 4 |            0.25 | 1~10 cycles (0.25us to 2.5us)    |
+ * |                 8 |           0.125 | 2~10 cycles (0.25us to 1.25us)   |
+ * |                10 |             0.1 | 3~25 cycles (0.3us to 2.5us)     |
+ * |                16 |          0.0625 | 4~25 cycles (0.25us to 1.5625us) |
+ * |                20 |            0.05 | 5~50 cycles (0.25us to 2.5us)    |
+ *
+ * ------------------------------------------------------------------------------------------------------------------ */
 
 /* *********Error Checking For the User Configuration Options Start********** */
 #ifdef _QMATRIX_
 
 /*
-* Info stored for each x line.
-*
-* For each X line, enter the port and pin it is on.
-* For instance, if X3 is on PB1, the 4th entry would be
-*    FILL_OUT_X_LINE_INFO( 1,1 ), and PORT_X_1 is B
-*/
+ * Info stored for each x line.
+ *
+ * For each X line, enter the port and pin it is on.
+ * For instance, if X3 is on PB1, the 4th entry would be
+ *    FILL_OUT_X_LINE_INFO( 1,1 ), and PORT_X_1 is B
+ */
 #define FILL_OUT_X_LINE_INFO( port_num,x_bit ) {JOIN(burst_qm_, port_num) ,(uint8_t)( 1u << x_bit ), BURST_MASK_X_PORT_ ## port_num  }
 
 /*
-* Info stored for each y line.
-*
-* For each Y line, enter the pin it is on.
-* For instance, if Y2 is on PA5 and PF5, the 3th entry would be
-*    FILL_OUT_X_LINE_INFO( 5 )
-* NOTE: 1. The PORTs for YA and YB on which Y lines are going to
-*          be needs to be defined as PORT_YA and PORT_YB.
-*
-* Example: PORT_YA=A and PORT_YB=F in the case above.
-*/
+ * Info stored for each y line.
+ *
+ * For each Y line, enter the pin it is on.
+ * For instance, if Y2 is on PA5 and PF5, the 3th entry would be
+ *    FILL_OUT_X_LINE_INFO( 5 )
+ * NOTE: 1. The PORTs for YA and YB on which Y lines are going to
+ *          be needs to be defined as PORT_YA and PORT_YB.
+ *
+ * Example: PORT_YA=A and PORT_YB=F in the case above.
+ */
 
 #define FILL_OUT_Y_LINE_INFO( bit ) { bit, (uint8_t)(1u<<bit) }
 
@@ -168,62 +166,62 @@ Clock speed (MHz) Cycle time (us) Suitable charge times
 
 /*  Total ticks per msec.  */
 /*
-*  TICKS_PER_MS = (CLK_FREQ/TIMER_PRESCALER)*(1/1000)
-*
-*/
+ *  TICKS_PER_MS = (CLK_FREQ/TIMER_PRESCALER)*(1/1000)
+ *
+ */
 #define TICKS_PER_MS                500
 
 /* Initialization values for the Qtouch library parameters. */
 /*
-* Sensor detect integration (DI) limit.
-* Default value: 4.
-*/
+ * Sensor detect integration (DI) limit.
+ * Default value: 4.
+ */
 #define DEF_QT_DI                      2
 
 /*
-* Sensor negative drift rate.
-*
-* Units: 200ms
-* Default value: 20 (4 seconds per LSB).
-*/
+ * Sensor negative drift rate.
+ *
+ * Units: 200ms
+ * Default value: 20 (4 seconds per LSB).
+ */
 #define DEF_QT_NEG_DRIFT_RATE          20      /* 4s per LSB */
 
 /*
-* Sensor positive drift rate.
-*
-* Units: 200ms
-* Default value: 5 (1 second per LSB).
-*/
+ * Sensor positive drift rate.
+ *
+ * Units: 200ms
+ * Default value: 5 (1 second per LSB).
+ */
 #define DEF_QT_POS_DRIFT_RATE          5       /* 1s per LSB */
 
 /*
-* Sensor drift hold time.
-*
-* Units: 200ms
-* Default value: 20 (hold off drifting for 4 seconds after leaving detect).
-*/
+ * Sensor drift hold time.
+ *
+ * Units: 200ms
+ * Default value: 20 (hold off drifting for 4 seconds after leaving detect).
+ */
 #define DEF_QT_DRIFT_HOLD_TIME         20      /* 4s */
 
 /*
-* Sensor maximum on duration.
-*
-* Units: 200ms (e.g., 150 = recalibrate after 30s). 0 = no recalibration.
-* Default value: 0 (recalibration disabled).
-*/
+ * Sensor maximum on duration.
+ *
+ * Units: 200ms (e.g., 150 = recalibrate after 30s). 0 = no recalibration.
+ * Default value: 0 (recalibration disabled).
+ */
 #define DEF_QT_MAX_ON_DURATION         50       /* disabled */
 
 /*
-* Sensor recalibration threshold.
-*
-* Default: RECAL_50 (recalibration threshold = 50% of detection threshold).
-*/
+ * Sensor recalibration threshold.
+ *
+ * Default: RECAL_50 (recalibration threshold = 50% of detection threshold).
+ */
 #define DEF_QT_RECAL_THRESHOLD         RECAL_50 /* recal threshold = 50% of detect */
 
 /*
-* Positive recalibration delay.
-*
-* Default: 3
-*/
+ * Positive recalibration delay.
+ *
+ * Default: 3
+ */
 #define DEF_QT_POS_RECAL_DELAY         3u
 
 /*--------------------------------------------------------------------------
@@ -242,12 +240,12 @@ Clock speed (MHz) Cycle time (us) Suitable charge times
 #define JOIN1( A, B, C ) A ## B ## C
 
 /* Macro to build register writes for controlling ports. The intermediate
-*  JOIN macro is required for correct expansion of the args.   */
+ *  JOIN macro is required for correct expansion of the args.   */
 #define REG( REGISTER, SIDE ) JOIN( REGISTER, SIDE )
 #define CONCAT( A, B, C ) JOIN1( A, B, C )
 
 /* The number of bytes required to report the maximum possible number of
-*  sensors. */
+ *  sensors. */
 #define QT_NUM_SENSOR_STATE_BYTES ( ( QT_NUM_CHANNELS + 7u ) / 8u )
 
 /* Status flags used with debug  */
@@ -552,9 +550,9 @@ typedef enum tag_sensor_type_t
 } sensor_type_t;
 
 /* Which AKS group, if any, a sensor is in.
-*
-*  NO_AKS_GROUP = sensor is not in an AKS group, and cannot be suppressed.
-*  AKS_GROUP_x  = sensor is in AKS group x.  */
+ *
+ *  NO_AKS_GROUP = sensor is not in an AKS group, and cannot be suppressed.
+ *  AKS_GROUP_x  = sensor is in AKS group x.  */
 typedef enum tag_aks_group_t
 {
     NO_AKS_GROUP,
@@ -653,16 +651,16 @@ typedef enum tag_channel_t
 } channel_t;
 
 /* A sensor detection hysteresis value.  This is expressed as a percentage of
-*  the sensor detection threshold.
-*
-*  HYST_x = hysteresis value is x% of detection threshold value (rounded down).
-*  NB: a minimum value of 2 is used.
-*
-*  Example: if detection threshold = 20, then:
-*     HYST_50   = 10 (50% of 20)
-*     HYST_25   = 5  (25% of 20)
-*     HYST_12_5 = 2  (12.5% of 20)
-*     HYST_6_25 = 2  (6.25% of 20 = 1, but value is hardlimited to 2)   */
+ *  the sensor detection threshold.
+ *
+ *  HYST_x = hysteresis value is x% of detection threshold value (rounded down).
+ *  NB: a minimum value of 2 is used.
+ *
+ *  Example: if detection threshold = 20, then:
+ *     HYST_50   = 10 (50% of 20)
+ *     HYST_25   = 5  (25% of 20)
+ *     HYST_12_5 = 2  (12.5% of 20)
+ *     HYST_6_25 = 2  (6.25% of 20 = 1, but value is hardlimited to 2)   */
 typedef enum tag_hysteresis_t
 {
     HYST_50,
@@ -672,11 +670,11 @@ typedef enum tag_hysteresis_t
 } hysteresis_t;
 
 /* For rotors and sliders, the resolution of the reported angle or position.
-*
-*  RES_x_BIT = rotor/slider reports x-bit values.
-*
-*  Example: if slider resolution is RES_7_BIT, then reported positions are in
-*  the range 0..127. */
+ *
+ *  RES_x_BIT = rotor/slider reports x-bit values.
+ *
+ *  Example: if slider resolution is RES_7_BIT, then reported positions are in
+ *  the range 0..127. */
 typedef enum tag_resolution_t
 {
     RES_1_BIT,
@@ -690,18 +688,18 @@ typedef enum tag_resolution_t
 } resolution_t;
 
 /* A sensor recalibration threshold.  This is expressed as a percentage of the
-*  sensor detection threshold.
-*
-*  RECAL_x = recalibration threshold is x% of detection threshold value
-*           (rounded down).
-*  NB:   a minimum value of 4 is used.
-*
-*  Example: if detection threshold = 40, then:
-*     RECAL_100  = 40 (100% of 40)
-*     RECAL_50   = 20 (50% of 40)
-*     RECAL_25   = 10 (25% of 40)
-*     RECAL_12_5 = 5  (12.5% of 40)
-*  RECAL_6_25 = 4  (6.25% of 40 = 2, but value is hardlimited to 4)  */
+ *  sensor detection threshold.
+ *
+ *  RECAL_x = recalibration threshold is x% of detection threshold value
+ *           (rounded down).
+ *  NB:   a minimum value of 4 is used.
+ *
+ *  Example: if detection threshold = 40, then:
+ *     RECAL_100  = 40 (100% of 40)
+ *     RECAL_50   = 20 (50% of 40)
+ *     RECAL_25   = 10 (25% of 40)
+ *     RECAL_12_5 = 5  (12.5% of 40)
+ *  RECAL_6_25 = 4  (6.25% of 40 = 2, but value is hardlimited to 4)  */
 typedef enum tag_recal_threshold_t
 {
     RECAL_100,
@@ -833,8 +831,8 @@ extern uint16_t qt_measurement_period_msec;
 
 
 /*This function is called after the library has made capacitive measurements,
-* but before it has processed them. The user can use this hook to apply filter
-* functions to the measured signal values. */
+ * but before it has processed them. The user can use this hook to apply filter
+ * functions to the measured signal values. */
 extern void (*qt_filter_callback)( void );
 
 /*============================================================================
@@ -945,7 +943,7 @@ Notes    :  This function disables all enabled sensors, and returns all library
             re-enabled, and qt_init_sensing() must be called before
             qt_measure_channels() is called again.
 ============================================================================*/
-extern void qt_reset_sensing( void );
+extern void qt_reset_sensing(void);
 
 /*============================================================================
 Name     :  qt_get_sensor_delta
@@ -956,7 +954,7 @@ Output   :  returns the delta on the specified sensor
 Notes    :  This function is supplied as a functional replacement for the
             sensor_deltas[] array provided in earlier library versions.
 ============================================================================*/
-extern int16_t qt_get_sensor_delta( uint8_t sensor );
+extern int16_t qt_get_sensor_delta(uint8_t sensor);
 
 #ifdef _ROTOR_SLIDER_
 
@@ -987,13 +985,15 @@ Notes    :  The sensor number corresponding to the rotor depends on the order in
 
             The reported rotor value is valid when the rotor is on.
 ============================================================================*/
-extern void qt_enable_rotor(    channel_t from_channel,
-                         channel_t to_channel,
-                       aks_group_t aks_group,
-                       threshold_t detect_threshold,
-                      hysteresis_t detect_hysteresis,
-                      resolution_t angle_resolution,
-                           uint8_t angle_hysteresis );
+extern void qt_enable_rotor(
+		channel_t from_channel,
+		channel_t to_channel,
+		aks_group_t aks_group,
+		threshold_t detect_threshold,
+		hysteresis_t detect_hysteresis,
+		resolution_t angle_resolution,
+		uint8_t angle_hysteresis
+);
 
 /*============================================================================
 Name     :  qt_enable_slider
@@ -1022,13 +1022,15 @@ Notes    :  The sensor number corresponding to the slider depends on the order i
 
             The reported slider value is valid when the rotor is on.
 ============================================================================*/
-extern void qt_enable_slider(    channel_t from_channel,
-                          channel_t to_channel,
-                        aks_group_t aks_group,
-                        threshold_t detect_threshold,
-                       hysteresis_t detect_hysteresis,
-                       resolution_t position_resolution,
-                            uint8_t position_hysteresis );
+extern void qt_enable_slider(
+		channel_t from_channel,
+		channel_t to_channel,
+		aks_group_t aks_group,
+		threshold_t detect_threshold,
+		hysteresis_t detect_hysteresis,
+		resolution_t position_resolution,
+		uint8_t position_hysteresis
+);
 
 #endif
 

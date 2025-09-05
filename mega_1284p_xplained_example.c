@@ -119,6 +119,7 @@
 #include "init.h"
 #include "touch_api.h"
 
+
 #define ADC_NUM_OVERSAMPLING            16
 
 #define ASCII_BACKSPACE                 8
@@ -138,25 +139,27 @@
 
 #define NUM_COMMANDS                    12
 
+
 // Forward declarations of command functions
-static void print_help (void);
-static void flash_leds_cmd (void);
-static void read_ntc (void);
-static void read_light_sensor (void);
-static void light_sensor_demo (void);
-static void crystal_start_cmd (void);
-static void crystal_stop_cmd (void);
-static void idle_mode_cmd (void);
-static void power_save_cmd (void);
-static void power_down_cmd (void);
-static void standby_cmd (void);
-static void ext_standby_cmd (void);
+static void print_help(void);
+static void flash_leds_cmd(void);
+static void read_ntc(void);
+static void read_light_sensor(void);
+static void light_sensor_demo(void);
+static void crystal_start_cmd(void);
+static void crystal_stop_cmd(void);
+static void idle_mode_cmd(void);
+static void power_save_cmd(void);
+static void power_down_cmd(void);
+static void standby_cmd(void);
+static void ext_standby_cmd(void);
+
 
 //! Struct to hold all available commands, their help text and function to call
 struct {
 	char cmd[20];        // Command string
 	char help[70];       // Help text
-	void (* func)(void); // Function to call when command is entered
+	void (*func)(void); // Function to call when command is entered
 } commands[NUM_COMMANDS] = {
 	{ "help",                "Print this help",                                       print_help },
 	{ "flash leds",          "Toggles leds connected to PORTB0:3",                    flash_leds_cmd },
@@ -176,8 +179,8 @@ struct {
 static volatile bool light_sensor_demo_mode = false;
 
 //! Macro used for touch key detection
-#define QT_KEY_DETECT() \
-	(qt_measure_data.qt_touch_status.sensor_states[0] & 0x01)
+#define QT_KEY_DETECT()																								\
+		(qt_measure_data.qt_touch_status.sensor_states[0] & 0x01)
 
 //! Number of ports using touch
 #define NUMBER_OF_PORTS 1
@@ -195,7 +198,7 @@ static volatile uint16_t current_time_ms_touch = 0;
 /** Make sure printf knows where to print. The macro fdev_setup_stream()
  * is used to prepare a user-supplied FILE buffer for operation with stdio.
  */
-FILE usart1_str = FDEV_SETUP_STREAM((int(*)(char, FILE *))usart1_putchar, NULL, _FDEV_SETUP_WRITE);
+FILE usart1_str = FDEV_SETUP_STREAM((int(*)(char, FILE*))usart1_putchar, NULL, _FDEV_SETUP_WRITE);
 #endif
 
 //! ADC sources enum
@@ -208,8 +211,7 @@ enum adc_sources {
 /**
  * \brief PCINT8,9,10 ISR used for wake-up from sleep only
  */
-ISR(PCINT1_vect)
-{
+ISR(PCINT1_vect) {
 	return;
 }
 
@@ -223,8 +225,7 @@ ISR(PCINT1_vect)
  * that LEDs will be on longer than off at bright light and vice versa
  * at dark light.
  */
-ISR(TIMER1_OVF_vect)
-{
+ISR(TIMER1_OVF_vect) {
 	// Turn off LEDs
 	PORTB |= (1 << PORTB3) | (1 << PORTB2) | (1 << PORTB1) | (1 << PORTB0);
 	// PORTB0 set to input to enable sensing on SW0
@@ -248,8 +249,7 @@ ISR(TIMER1_OVF_vect)
  * that LEDs will be on longer than off at bright light and vice versa
  * at dark light.
  */
-ISR(TIMER1_COMPB_vect)
-{
+ISR(TIMER1_COMPB_vect) {
 	// Turn on LEDs (make sure PORTB0 is set as output)
 	DDRB |= (1 << DDB0);
 	PORTB &= ~((1 << PORTB3) | (1 << PORTB2) | (1 << PORTB1) | (1 << PORTB0));
@@ -261,8 +261,7 @@ ISR(TIMER1_COMPB_vect)
  * The TIMER1 compare A interrupt is used to time the touch acquisition.
  * The period of the timer is set by qt_measurement_period_msec.
  */
-ISR(TIMER1_COMPA_vect)
-{
+ISR(TIMER1_COMPA_vect) {
 	// Set flag, it's time to measure touch
 	time_to_measure_touch = true;
 
@@ -275,8 +274,7 @@ ISR(TIMER1_COMPA_vect)
  *
  * All LEDs (LED0:3) are toggled to indicate that the 32kHz crystal is running.
  */
-ISR(TIMER2_OVF_vect)
-{
+ISR(TIMER2_OVF_vect) {
 	// Toggle LEDs
 	PINB |= (1 << PINB3) | (1 << PINB2) | (1 << PINB1) | (1 << PINB0);
 }
@@ -286,8 +284,7 @@ ISR(TIMER2_OVF_vect)
  *
  * \param flashcount Number of times to flash LEDs
  */
-static void flash_leds(uint8_t flashcount)
-{
+static void flash_leds(uint8_t flashcount) {
 	uint8_t i;
 
 	for (i = 0; i < flashcount; i++) {
@@ -296,6 +293,7 @@ static void flash_leds(uint8_t flashcount)
 		// wait a while
 		delay_us(20000);
 	}
+
 	// make sure LEDs are off before we leave
 	PORTB |= (1 << PORTB3) | (1 << PORTB2) | (1 << PORTB1) | (1 << PORTB0);
 }
@@ -310,26 +308,25 @@ static void flash_leds(uint8_t flashcount)
  *
  * \return adc_data  Result from ADC reading of selected ADC channel
  */
-static uint16_t read_adc(enum adc_sources source)
-{
+static uint16_t read_adc(enum adc_sources source) {
   	uint16_t adc_data = 0;
 
 	// Clear old source and setup new source to sample from
 	ADMUX &= 0xE0;
 	ADMUX |= source;
 
-	for (int i = 0 ; i < ADC_NUM_OVERSAMPLING ; i++) {
+	for (int i = 0; i < ADC_NUM_OVERSAMPLING; i++) {
 		//Start single conversion
-		ADCSRA |= (1<<ADSC);
+		ADCSRA |= (1 << ADSC);
 
 		//Wait for conversion complete
-		while(!(ADCSRA & (1<<ADIF)));
+		while (!(ADCSRA & (1 << ADIF)));
 
 		//Read ADC conversion result
 		adc_data += ADC;
 	}
 
-	adc_data = adc_data/ADC_NUM_OVERSAMPLING;
+	adc_data = adc_data / ADC_NUM_OVERSAMPLING;
 
 	return adc_data;
 }
@@ -338,8 +335,7 @@ static uint16_t read_adc(enum adc_sources source)
  * \brief Function to read NTC ADC value.
  *
  */
-static void read_ntc()
-{
+static void read_ntc() {
 	uint16_t ntc_data;
 
 	// Read NTC sensor
@@ -608,8 +604,7 @@ static void process_command(const char *command)
  * Please refer to the \ref demo_mode "detailed description" for more
  * information and flow chart.
  */
-static void execute_demo_mode(void)
-{
+static void execute_demo_mode(void) {
 	// Status flags to indicate the re-burst for touch library
 	uint16_t status_flag = 0;
 	uint16_t burst_flag = 0;
@@ -636,7 +631,7 @@ static void execute_demo_mode(void)
 				}
 
 			} while (burst_flag);
-		MCUCR &= ~(1 << PUD);
+			MCUCR &= ~(1 << PUD);
 		}
 
 		if (!(PINB & (1 << PINB0))) {
@@ -714,8 +709,7 @@ static void execute_demo_mode(void)
  * information.
  *
  */
-static void execute_terminal_mode(void)
-{
+static void execute_terminal_mode(void) {
 	// Variable used for USART communication
 	uint8_t data = 0;
 	// Command buffer pointer used for USART communication
@@ -727,6 +721,7 @@ static void execute_terminal_mode(void)
 	io_init_terminal_mode();
 	usart1_init();
 	adc_init();
+
 	// Enable interrupts
 	sei();
 
@@ -735,37 +730,35 @@ static void execute_terminal_mode(void)
 	printf(CMD_PROMPT);
 
 	while (1) {
-
 		// Read and handle incomming data on usart1
 		data = usart1_getchar();
-		switch (data)	{
-
-		case ASCII_CR:
-			if (cmd_buf_ptr > 0) {
-				usart1_putchar('\n');
-				cmd_buffer[cmd_buf_ptr] = '\0';
-				process_command(cmd_buffer);
-				cmd_buf_ptr = 0;
-			}
-			printf(CMD_PROMPT);
-			break;
-
-		case ASCII_BACKSPACE:
-			if (cmd_buf_ptr == 0) {
+		switch (data) {
+			case ASCII_CR:
+				if (cmd_buf_ptr > 0) {
+					usart1_putchar('\n');
+					cmd_buffer[cmd_buf_ptr] = '\0';
+					process_command(cmd_buffer);
+					cmd_buf_ptr = 0;
+				}
+				printf(CMD_PROMPT);
 				break;
-			}
-			printf("\b \b");
-			cmd_buf_ptr--;
-			break;
 
-		default:
-			if (cmd_buf_ptr >= MAX_CMD_BUFFER_LEN || data < ASCII_SPACE ) {
-				// Break if command string is too long/ignore non-printable characters
+			case ASCII_BACKSPACE:
+				if (cmd_buf_ptr == 0) {
+					break;
+				}
+				printf("\b \b");
+				cmd_buf_ptr--;
 				break;
-			}
-			cmd_buffer[cmd_buf_ptr++] = data;
-			usart1_putchar(data);
-			break;
+
+			default:
+				if (cmd_buf_ptr >= MAX_CMD_BUFFER_LEN || data < ASCII_SPACE) {
+					// Break if command string is too long/ignore non-printable characters
+					break;
+				}
+				cmd_buffer[cmd_buf_ptr++] = data;
+				usart1_putchar(data);
+				break;
 		}
 	}
 }
@@ -781,8 +774,7 @@ static void execute_terminal_mode(void)
  * for more informaiton.
  */
 
-int main(void)
-{
+int main(void) {
 #if defined( __GNUC__ )
 	/* Setup stdout to point to the correct usart (USART1). This is needed to
 	 * use the fdev_setup_stream() macro in GCC.
